@@ -1,21 +1,31 @@
 #!/usr/bin/python
 
 from Classes.SensorReader import SensorReader
+from Classes.ConfigurationLoader import ConfigurationLoader
+import requests
+import json
+import os
 
 
-def main():
+def save_measurement():
+    configuration = ConfigurationLoader.load_configuration(os.path.abspath('config.yml'))
+
     sensor_reader = SensorReader()
     measurement = sensor_reader.measure()
 
-    json \
-        = '{"relative-humidity":' \
-        + str(measurement.relative_humidity) \
-        + ',' \
-        + '"temperature":' \
-        + str(measurement.temperature) \
-        + '}'
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    json_data = {
+        'relative_humidity': measurement.get_relative_humidity(),
+        'temperature': measurement.get_temperature()
+    }
 
-    print(json)
+    requests.post(
+        configuration.api_base_uri + '/measurement',
+        data=json.dumps(json_data),
+        headers=headers
+    )
 
 
-main()
+save_measurement()
